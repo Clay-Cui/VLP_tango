@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/toolbar" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:theme="@style/AboutAppTheme"
+        android:background="@android:color/background_light">
+
+        <ImageView
+            android:id="@+id/image_about"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/ic_help_black_24dp"/>
+
+        <TextView
+            android:id="@+id/description_about"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_below="@+id/image_about"
+            android:text="@string/description_activity_about"
+            android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/text_version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/description_about"
+            android:textSize="11sp"/>
+
+        <Button
+            android:id="@+id/online_doc_about"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/description_about"
+            android:layout_marginTop="20dp"
+            android:text="Online documentation"/>
+
+        <Button
+            android:id="@+id/rate_app_about"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/online_doc_about"
+            android:text="Rate the app"/>
+
+        <Button
+            android:id="@+id/source_code_about"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/rate_app_about"
+            android:text="Source code"/>
+
+        <TextView
+            android:id="@+id/text_intermodalics_about"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/source_code_about"
+            android:layout_marginTop="15dp"
+            android:text="Brought to you by"/>
+
+        <ImageButton
+            android:id="@+id/logo_intermodalics_about"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/text_intermodalics_about"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/logo_intermodalics"/>
+
+        <TextView
+            android:id="@+id/text_ekumen_about"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/logo_intermodalics_about"
+            android:layout_marginTop="20dp"
+            android:text="in collaboration with"/>
+
+        <ImageButton
+            android:id="@+id/logo_ekumen_about"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/text_ekumen_about"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/logo_ekumen"/>
+
+        <TextView
+            android:id="@+id/text_powered_about"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/logo_ekumen_about"
+            android:layout_marginTop="30dp"
+            android:text="Powered by"/>
+
+        <ImageButton
+            android:id="@+id/logo_ros_about"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/text_powered_about"
+            android:background="@drawable/logo_ros"
+            android:layout_marginTop="10dp"/>
+
+        <ImageButton
+            android:id="@+id/logo_tango_about"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/logo_ros_about"
+            android:layout_toLeftOf="@+id/logo_ros_about"
+            android:background="@drawable/logo_tango"
+            android:layout_marginRight="30dp"/>
+
+        <TextView
+            android:id="@+id/text_rosjava_about"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/logo_ros_about"
+            android:layout_toRightOf="@+id/logo_ros_about"
+            android:layout_marginLeft="30dp"
+            android:text="@string/rosjava_about"/>
+    </RelativeLayout>
+</LinearLayout>

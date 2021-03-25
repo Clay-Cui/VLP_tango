@@ -1,0 +1,83 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/pref_category_ros_title"
+        android:key="@string/pref_category_ros_key">
+        <CheckBoxPreference
+            android:title="@string/pref_master_is_local_title"
+            android:key="@string/pref_master_is_local_key"
+            android:defaultValue="false"
+            android:disableDependentsState="true"
+            android:summary="@string/pref_master_is_local_summary"/>
+
+        <EditTextPreference
+            android:title="@string/pref_master_uri_title"
+            android:key="@string/pref_master_uri_key"
+            android:defaultValue="@string/pref_master_uri_default"
+            android:dependency="@string/pref_master_is_local_key"
+            android:inputType="textCapWords"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:selectAllOnFocus="true"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_category_tango_title"
+        android:key="@string/pref_category_tango_key">
+        <eu.intermodalics.tango_ros_streamer.android.CustomSwitchPreference
+            android:title="@string/pref_create_new_map"
+            android:key="@string/pref_create_new_map_key"
+            android:defaultValue="false"
+            android:disableDependentsState="true"
+            android:summary="@string/pref_create_new_map_summary" />
+        <ListPreference
+            android:title="Localization mode"
+            android:key="@string/pref_localization_mode_key"
+            android:defaultValue="2"
+            android:entries="@array/listLocalizationMode"
+            android:entryValues="@array/listLocalizationModeValues"
+            android:dependency="@string/pref_create_new_map_key" />
+        <eu.intermodalics.tango_ros_streamer.android.MapChooserPreference
+            android:title="Choose localization map"
+            android:key="@string/pref_localization_map_uuid_key" />
+        <eu.intermodalics.tango_ros_streamer.android.CustomSwitchPreference
+            android:title="@string/pref_enable_depth"
+            android:key="@string/pref_enable_depth_key"
+            android:defaultValue="true"
+            android:summary="@string/pref_enable_depth_summary" />
+        <eu.intermodalics.tango_ros_streamer.android.CustomSwitchPreference
+            android:title="@string/pref_enable_color_camera"
+            android:key="@string/pref_enable_color_camera_key"
+            android:defaultValue="true"
+            android:enabled="false"
+            android:summary="@string/pref_enable_color_camera_summary" />
+    </PreferenceCategory>
+
+
+    <PreferenceCategory
+        android:title="@string/pref_category_general_title"
+        android:key="@string/pref_category_general_key">
+        <EditTextPreference
+            android:title="@string/pref_log_file_title"
+            android:key="@string/pref_log_file_key"
+            android:defaultValue="@string/pref_log_file_default"
+            android:inputType="textCapWords"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:selectAllOnFocus="true"/>
+
+        <CheckBoxPreference
+            android:title="@string/pref_run_at_device_boot_title"
+            android:key="@string/pref_run_at_device_boot_key"
+            android:defaultValue="false"
+            android:summary="@string/pref_run_at_device_boot_summary"/>
+
+        <Preference
+            android:title="@string/pref_about_app_title"
+            android:key="@string/pref_about_app_key"/>
+        <Preference
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:title="@string/student_info_key" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

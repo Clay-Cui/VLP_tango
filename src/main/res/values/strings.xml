@@ -1,0 +1,103 @@
+<resources>
+    <string name="app_name">Tango Ros Streamer</string>
+    <string name="pref_previously_started_key">pref_previously_started</string>
+
+    <string name="title_activity_settings">Settings</string>
+    <string name="welcome_text_first_run">Welcome to Tango Ros Streamer! Please define your settings before starting.</string>
+    <string name="snackbar_text_first_run">Click on DONE once your settings are set.</string>
+    <string name="snackbar_action_text_first_run">Done</string>
+    <string name="snackbar_text_restart_app">You will need to restart the app to apply these new settings</string>
+    <string name="snackbar_text_restart_tango">You will need to restart Tango to apply these new settings</string>
+    <string name="snackbar_action_text_restart_tango">RESTART TANGO</string>
+    <string name="snackbar_text_reconnect_ros">Connection to ROS Master failed.</string>
+    <string name="snackbar_action_text_reconnect_ros">RECONNECT ROS.</string>
+    <string name="snackbar_text_load_new_map">You can now load your new map and localize in it.</string>
+    <string name="snackbar_action_text_load_new_map">LOAD AND LOCALIZE</string>
+
+
+    <string name="title_activity_about">About Tango Ros Streamer</string>
+    <string name="description_activity_about">
+        This application provides Tango data to the ROS ecosystem</string>
+    <string name="wiki_address">http://wiki.ros.org/tango_ros_streamer</string>
+    <string name="github_address">http://github.com/Intermodalics/tango_ros</string>
+    <string name="intermodalics_website_address">http://www.intermodalics.eu/</string>
+    <string name="ekumen_website_address">http://www.ekumenlabs.com/</string>
+    <string name="tango_website_address">http://get.google.com/tango/</string>
+    <string name="ros_website_address">http://wiki.ros.org/</string>
+    <string name="rosjava_about"><a href="http://wiki.ros.org/rosjava">RosJava</a></string>
+
+    <string name="save_map_dialog_title">Enter the name of the map</string>
+    <string name="load_occupancy_grid_dialog_title">Choose an occupancy grid</string>
+    <string name="uuids_names_map">uuids_names_map</string>
+    <string name="ros_status">ros_status</string>
+    <string name="show_load_occupancy_grid_error_key">show_load_occupancy_grid_error</string>
+    <string name="show_load_occupancy_grid_empty_key">show_load_occupancy_grid_empty</string>
+    <string name="list_names_occupancy_grid_key">list_names_occupancy_grid</string>
+    <string name="occupancy_grid_directory_key">occupancy_grid_directory</string>
+
+    <!-- Strings related to error messages -->
+
+    <string name="network_error">No network found! Please check your network configuration and restart the application.</string>
+    <string name="ros_init_error">Unable to connect to ROS master.</string>
+    <string name="local_master_error">Unable to start local master. Please check your network configuration and restart the application.</string>
+    <string name="tango_lib_error">Unable to load Tango library</string>
+    <string name="tango_bind_error">Unable to bind to Tango Service</string>
+    <string name="tango_version_error">Your version of Tango is out of date</string>
+    <string name="point_device">Please point the device to a feature-rich environment</string>
+    <string name="name_error">Please enter a valid name</string>
+    <string name="save_map_error">Unable to save the map</string>
+    <string name="load_occupancy_grid_error">Unable to load the occupancy grid, please try again with a different one.</string>
+    <string name="load_occupancy_grid_empty">No occupancy grid available, please create a new map.</string>
+    <string name="save_map_success">Map saved successfully! Tango is disconnecting now.</string>
+    <string name="load_occupancy_grid_success">Occupancy grid successfully loaded!</string>
+    <string name="load_occupancy_grid_not_aligned">Occupancy grid successfully loaded but not aligned.</string>
+    <string name="tango_permission_denied">Requested permission denied: connection to Tango can fail and some functionalities will not work properly.</string>
+
+    <!-- Strings related to settings preferences -->
+    
+    <string name="pref_category_ros_title">ROS</string>
+    <string name="pref_category_ros_key">pref_category_ros</string>
+
+    <string name="pref_master_is_local_title">Run local master</string>
+    <string name="pref_master_is_local_key">pref_master_is_local</string>
+    <string name="pref_master_is_local_summary">Enable to run the ROS master on the device</string>
+
+    <string name="pref_master_uri_title">Master URI</string>
+    <string name="pref_master_uri_key">pref_master_uri</string>
+    <string name="pref_master_uri_default">http://local-desktop:11311</string>
+
+    <string name="pref_category_tango_title">Tango</string>
+    <string name="pref_category_tango_key">pref_category_tango</string>
+
+    <string name="pref_create_new_map">Create a new localization map</string>
+    <string name="pref_create_new_map_key">create_new_map</string>
+    <string name="pref_create_new_map_summary">Enable to create a new localization map. This map can be used for localization later.</string>
+
+    <string name="pref_enable_depth">Enable depth camera</string>
+    <string name="pref_enable_depth_key">enable_depth</string>
+    <string name="pref_enable_depth_summary">Enable depth camera when connecting to Tango.</string>
+
+    <string name="pref_enable_color_camera">Enable color camera</string>
+    <string name="pref_enable_color_camera_key">enable_color_camera</string>
+    <string name="pref_enable_color_camera_summary">Enable color camera when connecting to Tango. (Requires API > 23.)</string>
+
+    <string name="pref_localization_mode_key">localization_mode</string>
+    <string name="pref_localization_map_uuid_key">localization_map_uuid</string>
+
+    <string name="pref_category_general_title">General</string>
+    <string name="pref_category_general_key">pref_category_general</string>
+
+    <string name="pref_log_file_title">Log file name</string>
+    <string name="pref_log_file_key">pref_log_file_name</string>
+    <string name="pref_log_file_default">tango_ros_streamer_log</string>
+
+    <string name="pref_run_at_device_boot_title">Auto start app after boot</string>
+    <string name="pref_run_at_device_boot_key">pref_run_at_device_boot</string>
+    <string name="pref_run_at_device_boot_summary">Enable to start the app automatically after the device boot</string>
+
+    <string name="pref_about_app_title">About Tango Ros Streamer</string>
+    <string name="pref_about_app_key">pref_about_app</string>
+
+    <string name="student_info_title">Songqiao Cui and Song Gao</string>
+    <string name="student_info_key">Songqiao Cui and Song Gao</string>
+</resources>
