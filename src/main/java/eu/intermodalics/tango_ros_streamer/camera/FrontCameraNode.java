@@ -46,6 +46,7 @@ public class FrontCameraNode  extends AbstractNodeMain implements NodeMain, Sens
 
     }
 
+
     public void publishImage(Bitmap bitmap){
         ChannelBufferOutputStream stream;
         stream = new ChannelBufferOutputStream(MessageBuffers.dynamicBuffer());

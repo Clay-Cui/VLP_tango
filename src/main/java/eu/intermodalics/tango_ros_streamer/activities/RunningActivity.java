@@ -69,6 +69,7 @@ import org.ros.address.InetAddressFactory;
 import org.ros.android.NodeMainExecutorService;
 import org.ros.android.NodeMainExecutorServiceListener;
 import org.ros.exception.RosRuntimeException;
+import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
 import org.ros.node.DefaultNodeListener;
 import org.ros.node.NodeConfiguration;
@@ -423,11 +424,14 @@ public class RunningActivity extends AppCompatRosActivity implements
                     mCameraView.setVisibility(View.GONE);
                     shotButton.setVisibility(View.INVISIBLE);
                     mCameraProxy.releaseCamera();
+                    restartTango();
 
                 }else{
+                    mTangoServiceClientNode.callTangoConnectService(TangoConnectRequest.DISCONNECT);
+                    mCameraProxy.openCamera(mCameraView.getWidth(), mCameraView.getHeight());
                     mCameraView.setVisibility(View.VISIBLE);
                     shotButton.setVisibility(View.VISIBLE);
-                    mCameraProxy.openCamera(mCameraView.getWidth(), mCameraView.getHeight());
+
                 }
             }
         });
@@ -1055,6 +1059,8 @@ public class RunningActivity extends AppCompatRosActivity implements
         nodeMainExecutor.execute(mImuNode, nodeConfiguration);
         // Create camera publisher
         cameraNode=new FrontCameraNode(this);
+        nodeConfiguration.setNodeName(cameraNode.getDefaultNodeName());
+        nodeMainExecutor.execute(cameraNode,nodeConfiguration);
 //        mCamerasPublishers = new CamerasPublishers(this,"lenovo");
 //        nodeConfiguration.setNodeName(mCamerasPublishers.getDefaultNodeName());
 ////        nodeMainExecutor.execute(mCamerasPublishers,nodeConfiguration);

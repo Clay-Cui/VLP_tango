@@ -51,20 +51,20 @@ public class Camera2GLSurfaceView extends GLSurfaceView implements GLSurfaceView
         mCameraProxy.setPreviewSurface(mSurfaceTexture);
         mDrawer = new CameraDrawer();
         Log.d(TAG, "onSurfaceCreated. width: " + getWidth() + ", height: " + getHeight());
-        mCameraProxy.openCamera(getWidth(), getHeight());
+        //mCameraProxy.openCamera(getWidth(), getHeight());
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         Log.d(TAG, "onSurfaceChanged. thread: " + Thread.currentThread().getName());
         Log.d(TAG, "onSurfaceChanged. width: " + width + ", height: " + height);
-        int previewWidth = mCameraProxy.getPreviewSize().getWidth();
-        int previewHeight = mCameraProxy.getPreviewSize().getHeight();
-        if (width > height) {
-            setAspectRatio(previewWidth, previewHeight);
-        } else {
-            setAspectRatio(previewHeight, previewWidth);
-        }
+//        int previewWidth = mCameraProxy.getPreviewSize().getWidth();
+//        int previewHeight = mCameraProxy.getPreviewSize().getHeight();
+//        if (width > height) {
+//            setAspectRatio(previewWidth, previewHeight);
+//        } else {
+//            setAspectRatio(previewHeight, previewWidth);
+//        }
         GLES20.glViewport(0, 0, width, height);
     }
 

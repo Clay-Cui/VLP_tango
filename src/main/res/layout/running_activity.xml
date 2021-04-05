@@ -101,10 +101,12 @@
                     android:layout_below="@+id/load_occupancy_grid_button"
 
                     android:layout_toRightOf="@+id/log_switch"
+                    android:checked="false"
                     android:showText="true"
                     android:splitTrack="false"
                     android:textOff='"Tango Mode  "'
-                    android:textOn='"Camera Mode"' />
+                    android:textOn='"Camera Mode"'
+                    tools:checked="false" />
 
                 <TextView
                     android:id="@+id/log_view"
@@ -130,7 +132,8 @@
                     android:layout_marginStart="12dp"
                     android:layout_marginTop="-22dp"
                     android:layout_toEndOf="@+id/camera_switch"
-                    android:text="shot" />
+                    android:text="shot"
+                    android:visibility="invisible" />
 
             </RelativeLayout>
 
