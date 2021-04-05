@@ -41,6 +41,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -151,6 +152,11 @@ public class RunningActivity extends AppCompatRosActivity implements
     private Snackbar mSnackbarLoadNewMap;
     private Snackbar mSnackbarRosReconnection;
 
+    private boolean firstin = true;
+    private boolean permissionTrans;    // 0 -> tango to node; 1->node to tango
+
+    private LinearLayout cameraView;
+
     public RunningActivity() {
         super("TangoRosStreamer", "TangoRosStreamer");
     }
@@ -248,6 +254,14 @@ public class RunningActivity extends AppCompatRosActivity implements
                 displayToastMessage(R.string.point_device);
             }
         }
+
+        //
+        if(status == TangoStatus.SERVICE_CONNECTED && permissionTrans ){
+            if(!firstin){
+                mCamerasPublishers.getCamera().release();
+//                nodeMainExecutor.shutdownNodeMain(mCamerasPublishers);
+            }
+        }
     }
 
     private void switchTangoLight(final TangoStatus status) {
@@ -324,6 +338,8 @@ public class RunningActivity extends AppCompatRosActivity implements
         mTangoLightImageView = (ImageView) findViewById(R.id.is_tango_ok_image);
         mlogSwitch = (Switch) findViewById(R.id.log_switch);
         cameraSwitch = (Switch) findViewById(R.id.camera_switch);
+        cameraSwitch.setChecked(true);
+        cameraView = (LinearLayout)findViewById(R.id.camera_view);
         mlogSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -519,7 +535,12 @@ public class RunningActivity extends AppCompatRosActivity implements
         }
         updateLoadAndSaveMapButtons();
         updateTangoStatus(TangoStatus.values()[status]);
+
+
+
     }
+
+
 
     private void saveUuidsNamestoHashMap() {
         mTangoServiceClientNode.callGetMapUuidsService();
@@ -728,9 +749,21 @@ public class RunningActivity extends AppCompatRosActivity implements
         mTangoServiceClientNode.callTangoConnectService(TangoConnectRequest.RECONNECT);
     }
 
+    private void stopTango(){
+        if (mParameterNode != null) {
+            try {
+                mParameterNode.setPreferencesFromParameterServer();
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+            }
+        }
+        mTangoServiceClientNode.callTangoConnectService(TangoConnectRequest.DISCONNECT);
+        displayToastMessage(R.string.permission_to_selfnode);
+    }
+
     @Override
     protected void init(final NodeMainExecutor nodeMainExecutor) {
-        NodeConfiguration nodeConfiguration;
+        final NodeConfiguration nodeConfiguration;
         try {
             nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress());
             nodeConfiguration.setMasterUri(this.nodeMainExecutorService.getMasterUri());
@@ -765,21 +798,38 @@ public class RunningActivity extends AppCompatRosActivity implements
         nodeMainExecutor.execute(mImuNode, nodeConfiguration);
         // Create camera publisher
 
-//        mCamerasPublishers = new CamerasPublishers(this,"lenovo");
-//        nodeConfiguration.setNodeName(mCamerasPublishers.getDefaultNodeName());
-////        nodeMainExecutor.execute(mCamerasPublishers,nodeConfiguration);
-//        cameraSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-//                mCamerasPublishers.getCamera().release();
-//
-//                nodeMainExecutor.shutdownNodeMain(mCamerasPublishers);
-//
-//                restartTango();
-//
-//                displayToastMessage(R.string.test);
-//            }
-//        });
+        mCamerasPublishers = new CamerasPublishers(this,"lenovo");
+        nodeConfiguration.setNodeName(mCamerasPublishers.getDefaultNodeName());
+//        nodeMainExecutor.execute(mCamerasPublishers,nodeConfiguration);
+        cameraSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+
+                if(isChecked){
+//                      cameraView.setVisibility(View.INVISIBLE);
+
+                    restartTango();
+
+                    displayToastMessage(R.string.permission_to_tango);
+                    firstin = false;
+                    permissionTrans = true;
+                }else{
+
+//                    cameraView.setVisibility(View.VISIBLE);
+                    stopTango();
+
+//                    if(!TangoInitializationHelper.isTangoServiceBound())
+//                        updateTangoStatus(TangoStatus.SERVICE_NOT_CONNECTED);
+
+                    nodeMainExecutor.execute(mCamerasPublishers,nodeConfiguration);
+
+                    permissionTrans = false;
+
+
+                }
+
+            }
+        });
         // Create and start Tango ROS Node
         nodeConfiguration.setNodeName(TangoNodeletManager.NODE_NAME);
         if (TangoInitializationHelper.loadTangoSharedLibrary() !=
