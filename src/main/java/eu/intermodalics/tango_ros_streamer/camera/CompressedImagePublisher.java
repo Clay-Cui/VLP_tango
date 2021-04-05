@@ -74,4 +74,9 @@ public class CompressedImagePublisher implements RawImageListener {
         cameraInfo.setHeight(size.height);
         cameraInfoPublisher.publish(cameraInfo);
     }
+
+    public void stop(){
+        cameraInfoPublisher.shutdown();
+
+    }
 }

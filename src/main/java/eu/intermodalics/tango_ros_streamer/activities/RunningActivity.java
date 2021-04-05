@@ -98,6 +98,9 @@ public class RunningActivity extends AppCompatRosActivity implements
     private static final int REQUEST_CODE_DATASET_PERMISSION = 112;
     public static final String RESTART_TANGO = "restart_tango";
 
+    private NodeMainExecutor mNodeMainExecutor;
+    private NodeConfiguration nodeConfiguration;
+    private Boolean initfinished = false;
     public static class StartSettingsActivityRequest {
         public static final int FIRST_RUN = 11;
         public static final int STANDARD_RUN = 12;
@@ -256,11 +259,18 @@ public class RunningActivity extends AppCompatRosActivity implements
         }
 
         //
-        if(status == TangoStatus.SERVICE_CONNECTED && permissionTrans ){
-            if(!firstin){
-                mCamerasPublishers.getCamera().release();
-//                nodeMainExecutor.shutdownNodeMain(mCamerasPublishers);
+        if(initfinished){
+        if(status == TangoStatus.SERVICE_NOT_CONNECTED && ! permissionTrans){
+            if(firstin) {
+                mNodeMainExecutor.execute(mCamerasPublishers, nodeConfiguration.setNodeName(mCamerasPublishers.getDefaultNodeName()));
+                firstin = false;
+
+            }else{
+                mCamerasPublishers.rerun();
             }
+
+//            cameraView.setVisibility(View.VISIBLE);
+        }
         }
     }
 
@@ -763,7 +773,8 @@ public class RunningActivity extends AppCompatRosActivity implements
 
     @Override
     protected void init(final NodeMainExecutor nodeMainExecutor) {
-        final NodeConfiguration nodeConfiguration;
+        mNodeMainExecutor = nodeMainExecutor;
+
         try {
             nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress());
             nodeConfiguration.setMasterUri(this.nodeMainExecutorService.getMasterUri());
@@ -807,22 +818,18 @@ public class RunningActivity extends AppCompatRosActivity implements
 
                 if(isChecked){
 //                      cameraView.setVisibility(View.INVISIBLE);
+                        mCamerasPublishers.getCamera().release();
+                        mNodeMainExecutor.shutdownNodeMain(mCamerasPublishers);
 
                     restartTango();
 
                     displayToastMessage(R.string.permission_to_tango);
-                    firstin = false;
+
                     permissionTrans = true;
                 }else{
 
 //                    cameraView.setVisibility(View.VISIBLE);
                     stopTango();
-
-//                    if(!TangoInitializationHelper.isTangoServiceBound())
-//                        updateTangoStatus(TangoStatus.SERVICE_NOT_CONNECTED);
-
-                    nodeMainExecutor.execute(mCamerasPublishers,nodeConfiguration);
-
                     permissionTrans = false;
 
 
@@ -871,6 +878,8 @@ public class RunningActivity extends AppCompatRosActivity implements
             Log.e(TAG, getString(R.string.tango_lib_error));
             displayToastMessage(R.string.tango_lib_error);
         }
+
+        initfinished = true;
     }
 
     /**

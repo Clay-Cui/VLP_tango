@@ -33,7 +33,7 @@ public class CamerasPublishers implements NodeMain {
     private byte[][] previewBuffers;
     private RawImageListener[] rawImageListeners;
     private BufferingPreviewCallback[] bufferingPreviewCallbacks;
-
+    private Boolean firstin = true;
 
     public CamerasPublishers(Activity mainActivity, String robotName) {
         this.mainActivity = mainActivity;
@@ -110,6 +110,10 @@ public class CamerasPublishers implements NodeMain {
     @Override
     public void onError(Node node, Throwable throwable) {
 
+    }
+
+    public void rerun() {
+        this.fpThread.run();
     }
 
     private final class BufferingPreviewCallback implements Camera.PreviewCallback {
