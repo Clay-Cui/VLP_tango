@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -18,6 +19,7 @@
             android:layout_height="match_parent">
 
             <RelativeLayout
+                android:id="@+id/button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -47,8 +49,8 @@
                     android:id="@+id/is_ros_ok_image"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignTop="@+id/is_ros_ok_text"
                     android:layout_alignLeft="@+id/master_uri"
+                    android:layout_alignTop="@+id/is_ros_ok_text"
                     android:src="@drawable/btn_radio_on_orange_light" />
 
                 <TextView
@@ -63,8 +65,8 @@
                     android:id="@+id/is_tango_ok_image"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignTop="@+id/is_tango_ok_text"
                     android:layout_alignLeft="@+id/master_uri"
+                    android:layout_alignTop="@+id/is_tango_ok_text"
                     android:src="@drawable/btn_radio_on_orange_light" />
 
                 <Button
@@ -73,7 +75,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/is_tango_ok_text"
                     android:text="Save map and occupancy grid"
-                    android:visibility="gone"/>
+                    android:visibility="gone" />
 
                 <Button
                     android:id="@+id/load_occupancy_grid_button"
@@ -81,15 +83,16 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/save_map_button"
                     android:text="Load occupancy grid"
-                    android:visibility="gone"/>
+                    android:visibility="gone" />
 
                 <Switch
                     android:id="@+id/log_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/load_occupancy_grid_button"
-                    android:text="Display log"
-                    android:checked="false" />
+                    android:checked="false"
+                    android:text="Display log" />
+
                 <Switch
                     android:id="@+id/camera_switch"
                     android:layout_width="wrap_content"
@@ -98,8 +101,10 @@
                     android:layout_below="@+id/load_occupancy_grid_button"
 
                     android:layout_toRightOf="@+id/log_switch"
-                    android:checked="false"
-                    android:text="Switch Camera to Tango" />
+                    android:showText="true"
+                    android:splitTrack="false"
+                    android:textOff='"Tango Mode  "'
+                    android:textOn='"Camera Mode"' />
 
                 <TextView
                     android:id="@+id/log_view"
@@ -109,16 +114,23 @@
                     android:scrollbars="vertical"
                     android:visibility="invisible" />
 
-                <LinearLayout
+                <eu.intermodalics.tango_ros_streamer.camera.Camera2GLSurfaceView
                     android:id="@+id/camera_view"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_below="@+id/log_switch"
                     android:orientation="vertical"
-                    android:visibility="invisible">
+                    android:visibility="invisible" />
 
-                </LinearLayout>
-
+                <Button
+                    android:id="@+id/shotButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/camera_switch"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="-22dp"
+                    android:layout_toEndOf="@+id/camera_switch"
+                    android:text="shot" />
 
             </RelativeLayout>
 

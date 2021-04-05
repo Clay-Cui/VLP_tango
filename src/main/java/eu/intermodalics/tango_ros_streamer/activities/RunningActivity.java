@@ -16,6 +16,7 @@
 
 package eu.intermodalics.tango_ros_streamer.activities;
 
+import android.Manifest;
 import android.animation.AnimatorInflater;
 import android.animation.AnimatorSet;
 import android.app.DialogFragment;
@@ -23,14 +24,30 @@ import android.app.FragmentManager;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.media.ExifInterface;
+import android.media.Image;
+import android.media.ImageReader;
 import android.net.Uri;
 import android.content.res.Configuration;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicYuvToRGB;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.format.Formatter;
 import android.text.method.ScrollingMovementMethod;
@@ -45,6 +62,7 @@ import android.widget.Switch;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import org.apache.commons.io.FilenameUtils;
 import org.ros.address.InetAddressFactory;
@@ -58,8 +76,14 @@ import org.ros.node.NodeListener;
 import org.ros.node.NodeMainExecutor;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -72,13 +96,19 @@ import eu.intermodalics.tango_ros_common.Logger;
 import eu.intermodalics.tango_ros_common.MasterConnectionChecker;
 import eu.intermodalics.tango_ros_common.TangoServiceClientNode;
 import eu.intermodalics.tango_ros_streamer.android.LoadOccupancyGridDialog;
+import eu.intermodalics.tango_ros_streamer.camera.Camera2GLSurfaceView;
+import eu.intermodalics.tango_ros_streamer.camera.Camera2Proxy;
 import eu.intermodalics.tango_ros_streamer.camera.CamerasPublishers;
+import eu.intermodalics.tango_ros_streamer.camera.FrontCameraNode;
+import eu.intermodalics.tango_ros_streamer.camera.ImageUtils;
 import eu.intermodalics.tango_ros_streamer.nodes.ImuNode;
 import eu.intermodalics.tango_ros_common.ParameterNode;
 import eu.intermodalics.tango_ros_streamer.R;
 import eu.intermodalics.tango_ros_streamer.android.SaveMapDialog;
 import tango_ros_messages.TangoConnectRequest;
 import tango_ros_messages.TangoConnectResponse;
+
+import static eu.intermodalics.tango_ros_streamer.camera.ImageUtils.GALLERY_PATH;
 
 public class RunningActivity extends AppCompatRosActivity implements
         SaveMapDialog.CallbackListener, LoadOccupancyGridDialog.CallbackListener,
@@ -143,13 +173,22 @@ public class RunningActivity extends AppCompatRosActivity implements
     private ImageView mRosLightImageView;
     private ImageView mTangoLightImageView;
     private Switch mlogSwitch;
-    private Switch cameraSwitch;
+
     private boolean mDisplayLog = false;
     private TextView mLogTextView;
     private Button mSaveMapButton;
     private Button mLoadOccupancyGridButton;
     private Snackbar mSnackbarLoadNewMap;
     private Snackbar mSnackbarRosReconnection;
+
+    //Camera objects
+    private static RunningActivity app;
+    private Camera2GLSurfaceView mCameraView;
+    private Camera2Proxy mCameraProxy;
+    private Button  shotButton;
+    private Switch changeMode;
+    private static FrontCameraNode cameraNode;
+    //***********************
 
     public RunningActivity() {
         super("TangoRosStreamer", "TangoRosStreamer");
@@ -323,7 +362,7 @@ public class RunningActivity extends AppCompatRosActivity implements
         mRosLightImageView = (ImageView) findViewById(R.id.is_ros_ok_image);
         mTangoLightImageView = (ImageView) findViewById(R.id.is_tango_ok_image);
         mlogSwitch = (Switch) findViewById(R.id.log_switch);
-        cameraSwitch = (Switch) findViewById(R.id.camera_switch);
+
         mlogSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -364,8 +403,259 @@ public class RunningActivity extends AppCompatRosActivity implements
                 }
             }
         });
+        //@Song camera objects
+
+        mCameraView = (Camera2GLSurfaceView) findViewById(R.id.camera_view);
+        mCameraProxy = mCameraView.getCameraProxy();
+        shotButton = (Button) findViewById(R.id.shotButton);
+        shotButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCameraProxy.setImageAvailableListener(mOnImageAvailableListener);
+                mCameraProxy.captureStillPicture(); // 拍照
+            }
+        });
+        changeMode = (Switch) findViewById(R.id.camera_switch);
+        changeMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(!b){
+                    mCameraView.setVisibility(View.GONE);
+                    shotButton.setVisibility(View.INVISIBLE);
+                    mCameraProxy.releaseCamera();
+
+                }else{
+                    mCameraView.setVisibility(View.VISIBLE);
+                    shotButton.setVisibility(View.VISIBLE);
+                    mCameraProxy.openCamera(mCameraView.getWidth(), mCameraView.getHeight());
+                }
+            }
+        });
+
         updateLoadAndSaveMapButtons();
     }
+
+
+    /************************************************************************
+    //**************@Song Camera Activities Starting here:********************
+    /************************************************************************/
+    private void checkPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA,Manifest.permission.READ_PHONE_STATE};
+            for (String permission : permissions) {
+                if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, permissions, 200);
+                    return;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[]
+            grantResults) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && requestCode == 200) {
+            for (int i = 0; i < permissions.length; i++) {
+                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "请在设置中打开摄像头和存储权限", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent();
+                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    Uri uri = Uri.fromParts("package", getPackageName(), null);
+                    intent.setData(uri);
+                    startActivityForResult(intent, 200);
+                    return;
+                }
+            }
+        }
+    }
+
+    private ImageReader.OnImageAvailableListener mOnImageAvailableListener = new ImageReader.OnImageAvailableListener
+            () {
+        @Override
+        public void onImageAvailable(ImageReader reader) {
+            new ImageSaveTask().execute(reader.acquireLatestImage()); // 保存图片
+        }
+    };
+
+    public static FrontCameraNode getCameraNode() {
+        return cameraNode;
+    }
+
+    private class ImageSaveTask extends AsyncTask<Image, Void, Bitmap> {
+
+        @Override
+        protected Bitmap doInBackground(Image... images) {
+            ByteBuffer buffer = images[0].getPlanes()[0].getBuffer();
+            byte[] bytes = new byte[buffer.remaining()];
+            buffer.get(bytes);
+            saveYUVData(images[0]);//存储YUV数据
+            final ByteBuffer yuvBytes = imageToByteBuffer(images[0]);
+            // Convert YUV to RGB
+            final RenderScript rs = RenderScript.create(getBaseContext());
+            final Bitmap bitmap = Bitmap.createBitmap(images[0].getWidth(), images[0].getHeight(), Bitmap.Config.ARGB_8888);
+            final Allocation allocationRgb = Allocation.createFromBitmap(rs, bitmap);
+            final Allocation allocationYuv = Allocation.createSized(rs, Element.U8(rs), yuvBytes.array().length);
+            allocationYuv.copyFrom(yuvBytes.array());
+            ScriptIntrinsicYuvToRGB scriptYuvToRgb = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+            scriptYuvToRgb.setInput(allocationYuv);
+            scriptYuvToRgb.forEach(allocationRgb);
+            allocationRgb.copyTo(bitmap);
+            //todo: here to transfer this bitmap to publisher
+            // Release
+            if(ImageUtils.saveBitmap(bitmap)){
+                saveExif(ImageUtils.outFile);
+            }
+            images[0].close();
+            bitmap.recycle();
+
+            allocationYuv.destroy();
+            allocationRgb.destroy();
+            rs.destroy();
+            return ImageUtils.getLatestThumbBitmap();
+        }
+
+
+
+    }
+    private void saveExif(File outFile) {
+        try {
+            ExifInterface exifInterface = new ExifInterface(outFile.getAbsolutePath());
+            exifInterface.setAttribute(ExifInterface.TAG_ISO,String.valueOf(mCameraProxy.getIso()));
+            double expTime = mCameraProxy.getmExpTime();
+            exifInterface.setAttribute(ExifInterface.TAG_EXPOSURE_TIME,String.valueOf(expTime));
+            exifInterface.setAttribute(ExifInterface.TAG_FLASH,"0");
+            exifInterface.saveAttributes();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmmss");
+
+    private void saveYUVData(Image image) {
+        String fileName = DATE_FORMAT.format(new Date(System.currentTimeMillis())) + ".yuv";
+        File file = new File(GALLERY_PATH, fileName);
+        FileOutputStream output = null;
+        ByteBuffer buffer;
+        byte[] bytes;
+        switch (image.getFormat()) {
+            case ImageFormat.YUV_420_888:
+                // "prebuffer" simply contains the meta information about the following planes.
+                ByteBuffer prebuffer = ByteBuffer.allocate(16);
+                prebuffer.putInt(image.getWidth())
+                        .putInt(image.getHeight())
+                        .putInt(image.getPlanes()[1].getPixelStride())
+                        .putInt(image.getPlanes()[1].getRowStride());
+                try {
+                    output = new FileOutputStream(file);
+                    output.write(prebuffer.array()); // write meta information to file
+                    // Now write the actual planes.
+                    for (int i = 0; i < 3; i++) {
+                        buffer = image.getPlanes()[i].getBuffer();
+                        bytes = new byte[buffer.remaining()]; // makes byte array large enough to hold image
+                        buffer.get(bytes); // copies image from buffer to byte array
+                        output.write(bytes);    // write the byte array to file
+                    }
+                    Log.d("YUV", "saveYUV. filepath: " + file.getAbsolutePath());
+                    Log.d("YUV", image.getWidth() + "   height:" + image.getHeight());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+//                    image.close(); // close this to free up buffer for other images
+                    if (null != output) {
+                        try {
+                            output.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                break;
+            case ImageFormat.RAW_SENSOR:
+                break;
+        }
+    }
+    private ByteBuffer imageToByteBuffer(final Image image) {
+        final Rect crop = image.getCropRect();
+        final int width = crop.width();
+        final int height = crop.height();
+
+        final Image.Plane[] planes = image.getPlanes();
+        final byte[] rowData = new byte[planes[0].getRowStride()];
+        final int bufferSize = width * height * ImageFormat.getBitsPerPixel(ImageFormat.YUV_420_888) / 8;
+        final ByteBuffer output = ByteBuffer.allocateDirect(bufferSize);
+
+        int channelOffset = 0;
+        int outputStride = 0;
+
+        for (int planeIndex = 0; planeIndex < 3; planeIndex++) {
+            if (planeIndex == 0) {
+                channelOffset = 0;
+                outputStride = 1;
+            } else if (planeIndex == 1) {
+                channelOffset = width * height + 1;
+                outputStride = 2;
+            } else if (planeIndex == 2) {
+                channelOffset = width * height;
+                outputStride = 2;
+            }
+
+            final ByteBuffer buffer = planes[planeIndex].getBuffer();
+            final int rowStride = planes[planeIndex].getRowStride();
+            final int pixelStride = planes[planeIndex].getPixelStride();
+
+            final int shift = (planeIndex == 0) ? 0 : 1;
+            final int widthShifted = width >> shift;
+            final int heightShifted = height >> shift;
+
+            buffer.position(rowStride * (crop.top >> shift) + pixelStride * (crop.left >> shift));
+
+            for (int row = 0; row < heightShifted; row++) {
+                final int length;
+
+                if (pixelStride == 1 && outputStride == 1) {
+                    length = widthShifted;
+                    buffer.get(output.array(), channelOffset, length);
+                    channelOffset += length;
+                } else {
+                    length = (widthShifted - 1) * pixelStride + 1;
+                    buffer.get(rowData, 0, length);
+
+                    for (int col = 0; col < widthShifted; col++) {
+                        output.array()[channelOffset] = rowData[col * pixelStride];
+                        channelOffset += outputStride;
+                    }
+                }
+
+                if (row < heightShifted - 1) {
+                    buffer.position(buffer.position() + rowStride - length);
+                }
+            }
+        }
+
+        return output;
+    }
+    public static RunningActivity getInstance() {
+        return app;
+    }
+
+    /************************************************************************
+     //**************@Song Camera Activities Ends here:********************
+     /************************************************************************/
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public void onClickOkSaveMapDialog(final String mapName) {
         assert(mapName !=null && !mapName.isEmpty());
@@ -764,7 +1054,7 @@ public class RunningActivity extends AppCompatRosActivity implements
         nodeConfiguration.setNodeName(mImuNode.getDefaultNodeName());
         nodeMainExecutor.execute(mImuNode, nodeConfiguration);
         // Create camera publisher
-
+        cameraNode=new FrontCameraNode(this);
 //        mCamerasPublishers = new CamerasPublishers(this,"lenovo");
 //        nodeConfiguration.setNodeName(mCamerasPublishers.getDefaultNodeName());
 ////        nodeMainExecutor.execute(mCamerasPublishers,nodeConfiguration);

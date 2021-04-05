@@ -6,8 +6,8 @@ android {
 
     defaultConfig {
         applicationId "eu.intermodalics.tango_ros_streamer"
-        minSdkVersion 14
-        targetSdkVersion 22
+        minSdkVersion 21
+        targetSdkVersion 26
     }
 
     lintOptions {
@@ -28,6 +28,7 @@ dependencies {
     compile 'org.ros.rosjava_messages:geometry_msgs:[0.3,)'
     compile 'org.ros.rosjava_messages:dynamic_reconfigure:[0.3,)'
     compile 'org.ros.rosjava_messages:tango_ros_messages:2.0.0'
+    //noinspection GradleCompatible
     compile 'com.android.support:support-v4:25.2.0'
     compile 'com.android.support:design:25.2.0'
     compile project(':tango_nodelet_manager')
