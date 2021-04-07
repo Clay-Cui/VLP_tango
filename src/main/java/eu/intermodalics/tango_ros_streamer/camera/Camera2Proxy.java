@@ -264,7 +264,7 @@ public class Camera2Proxy {
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(mDeviceOrientation));
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_OFF);
             captureBuilder.set(CaptureRequest.SENSOR_SENSITIVITY, 2000);
-            captureBuilder.set(CaptureRequest.SENSOR_EXPOSURE_TIME, (long)2000);
+            captureBuilder.set(CaptureRequest.SENSOR_EXPOSURE_TIME, (long)100000);
             // 预览如果有放大，拍照的时候也应该保存相同的缩放
             Rect zoomRect = mPreviewRequestBuilder.get(CaptureRequest.SCALER_CROP_REGION);
             if (zoomRect != null) {

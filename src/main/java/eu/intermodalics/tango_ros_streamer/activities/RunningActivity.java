@@ -118,7 +118,7 @@ public class RunningActivity extends AppCompatRosActivity implements
     private static final String TAGS_TO_LOG = TAG + ", " + "tango_client_api, " + "Registrar, "
             + "DefaultPublisher, " + "native, " + "DefaultPublisher" ;
     private static final int LOG_TEXT_MAX_LENGTH = 5000;
-    private static final int MAX_TANGO_CONNECTION_TRY = 500;
+    private static final int MAX_TANGO_CONNECTION_TRY = 500000000;
 
     private static final String REQUEST_TANGO_PERMISSION_ACTION = "android.intent.action.REQUEST_TANGO_PERMISSION";
     public static final String EXTRA_KEY_PERMISSIONTYPE = "PERMISSIONTYPE";
@@ -279,7 +279,7 @@ public class RunningActivity extends AppCompatRosActivity implements
             }
         });
     }
-
+    int initialise=0;
     private void updateTangoStatus(TangoStatus status) {
         if (mTangoStatus != status) {
             mTangoStatus = status;
@@ -287,6 +287,15 @@ public class RunningActivity extends AppCompatRosActivity implements
             if (status == TangoStatus.NO_FIRST_VALID_POSE) {
                 displayToastMessage(R.string.point_device);
             }
+//            if(status==TangoStatus.SERVICE_CONNECTED)
+//                initialise++;
+//            if(status==TangoStatus.SERVICE_NOT_CONNECTED){
+//                if(initialise!=0) {
+//                    mCameraProxy.openCamera(mCameraView.getWidth(), mCameraView.getHeight());
+//                    mCameraView.setVisibility(View.VISIBLE);
+//                    shotButton.setVisibility(View.VISIBLE);
+//                }
+//            }
         }
     }
 
@@ -416,21 +425,28 @@ public class RunningActivity extends AppCompatRosActivity implements
                 mCameraProxy.captureStillPicture(); // 拍照
             }
         });
+        checkPermission();
         changeMode = (Switch) findViewById(R.id.camera_switch);
         changeMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if(!b){
-                    mCameraView.setVisibility(View.GONE);
-                    shotButton.setVisibility(View.INVISIBLE);
-                    mCameraProxy.releaseCamera();
+                    if(mTangoStatus==TangoStatus.SERVICE_NOT_CONNECTED){
+//                        mCameraView.setVisibility(View.GONE);
+//                        shotButton.setVisibility(View.INVISIBLE);
+                        setCameraUiVisible(false);
+                        mCameraProxy.releaseCamera();
+                    }
+
+                    //mTangoServiceClientNode.callTangoConnectService(TangoConnectRequest.CONNECT);
                     restartTango();
 
                 }else{
-                    mTangoServiceClientNode.callTangoConnectService(TangoConnectRequest.DISCONNECT);
-                    mCameraProxy.openCamera(mCameraView.getWidth(), mCameraView.getHeight());
-                    mCameraView.setVisibility(View.VISIBLE);
-                    shotButton.setVisibility(View.VISIBLE);
+
+                    stopTango();
+//                    mCameraProxy.openCamera(mCameraView.getWidth(), mCameraView.getHeight());
+//                    mCameraView.setVisibility(View.VISIBLE);
+//                    shotButton.setVisibility(View.VISIBLE);
 
                 }
             }
@@ -656,7 +672,16 @@ public class RunningActivity extends AppCompatRosActivity implements
 
 
 
-
+    private void stopTango(){
+        if (mParameterNode != null) {
+            try {
+                mParameterNode.setPreferencesFromParameterServer();
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+            }
+        }
+        mTangoServiceClientNode.callTangoConnectService(TangoConnectRequest.DISCONNECT);
+    }
 
 
 
@@ -761,9 +786,27 @@ public class RunningActivity extends AppCompatRosActivity implements
             displayToastMessage(R.string.tango_disconnect_error);
             return;
         }
+        mCameraProxy.openCamera(mCameraView.getWidth(), mCameraView.getHeight());
+//        mCameraView.setVisibility(View.VISIBLE);
+//        shotButton.setVisibility(View.VISIBLE);
+        setCameraUiVisible(true);
         displayToastMessage(R.string.tango_disconnect_success);
     }
+    private void setCameraUiVisible(final boolean visible){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(visible){
+                    mCameraView.setVisibility(View.VISIBLE);
+                    shotButton.setVisibility(View.VISIBLE);
+                }else {
+                    mCameraView.setVisibility(View.INVISIBLE);
+                    shotButton.setVisibility(View.INVISIBLE);
+                }
 
+            }
+        });
+    }
     @Override
     public void onTangoReconnectServiceFinish(int response, String message) {
         if (response != TangoConnectResponse.TANGO_SUCCESS) {
@@ -1058,6 +1101,7 @@ public class RunningActivity extends AppCompatRosActivity implements
         nodeConfiguration.setNodeName(mImuNode.getDefaultNodeName());
         nodeMainExecutor.execute(mImuNode, nodeConfiguration);
         // Create camera publisher
+        app=this;
         cameraNode=new FrontCameraNode(this);
         nodeConfiguration.setNodeName(cameraNode.getDefaultNodeName());
         nodeMainExecutor.execute(cameraNode,nodeConfiguration);

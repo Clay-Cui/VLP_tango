@@ -23,7 +23,7 @@ import sensor_msgs.Image;
 
 public class FrontCameraNode  extends AbstractNodeMain implements NodeMain, SensorEventListener {
     private static final String TAG = FrontCameraNode.class.getSimpleName();
-    private static final String NODE_NAME = "android";
+    private static final String NODE_NAME = "test";
 
     private ConnectedNode mConnectedNode;
     private Publisher<sensor_msgs.CompressedImage> imagePublisher;
@@ -40,9 +40,9 @@ public class FrontCameraNode  extends AbstractNodeMain implements NodeMain, Sens
     public void onStart(ConnectedNode connectedNode){
         mConnectedNode = connectedNode;
         mLog = new ConnectedNodeLogger(connectedNode);
-        imagePublisher = connectedNode.newPublisher("android/frontCamera", Image._TYPE);
-        mCameraMessage = mConnectedNode.getTopicMessageFactory().newFromType("sensor_msgs/front_camera");
-        cameraInfoPublisher = connectedNode.newPublisher("android/frontCamera", sensor_msgs.CameraInfo._TYPE);
+        imagePublisher = connectedNode.newPublisher("test/frontCamera", sensor_msgs.CompressedImage._TYPE);
+        //mCameraMessage = mConnectedNode.getTopicMessageFactory().newFromType("sensor_msgs/front_camera");
+        cameraInfoPublisher = connectedNode.newPublisher("test/frontCamera", sensor_msgs.CameraInfo._TYPE);
 
     }
 
@@ -63,11 +63,11 @@ public class FrontCameraNode  extends AbstractNodeMain implements NodeMain, Sens
         stream.buffer().clear();
         imagePublisher.publish(image);
 
-        sensor_msgs.CameraInfo cameraInfo = cameraInfoPublisher.newMessage();
-        cameraInfo.getHeader().setStamp(currentTime);
-        cameraInfo.getHeader().setFrameId(frameId);
-        //todo:Add more attribute here, like imu or depth
-        cameraInfoPublisher.publish(cameraInfo);
+//        sensor_msgs.CameraInfo cameraInfo = cameraInfoPublisher.newMessage();
+//        cameraInfo.getHeader().setStamp(currentTime);
+//        cameraInfo.getHeader().setFrameId(frameId);
+//        //todo:Add more attribute here, like imu or depth
+//        cameraInfoPublisher.publish(cameraInfo);
     }
 
 

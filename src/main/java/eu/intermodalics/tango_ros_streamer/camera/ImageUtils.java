@@ -116,7 +116,8 @@ public class ImageUtils {
 
         try {
             os = new FileOutputStream(outFile);
-            cameraNode.publishImage(bitmap);
+            Bitmap temp=bitmap.copy(bitmap.getConfig(),true);
+            cameraNode.publishImage(temp);
             success = bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
             Log.d(TAG, "saveBitmap: " + success);
 //            if (success) {
