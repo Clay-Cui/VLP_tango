@@ -45,7 +45,7 @@ public class Camera2Proxy {
 
     private Activity mActivity;
 
-    private int mCameraId = CameraCharacteristics.LENS_FACING_FRONT; // 要打开的摄像头ID
+    private int mCameraId = CameraCharacteristics.LENS_FACING_BACK; // 要打开的摄像头ID
     //    private int mCameraId = CameraCharacteristics.LENS_FACING_EXTERNAL; // 要打开的摄像头ID
     private Size mPreviewSize; // 预览大小
     private CameraManager mCameraManager; // 相机管理者
@@ -128,13 +128,15 @@ public class Camera2Proxy {
             // 拍照大小，选择能支持的一个最大的图片大小
 //            Size largest = Collections.max(Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)), new
 //                    CompareSizesByArea());
-            Size largest = Collections.max(Arrays.asList(map.getOutputSizes(ImageFormat.YUV_420_888)), new
-                    CompareSizesByArea());
-            Log.d(TAG, "picture size: " + largest.getWidth() + "*" + largest.getHeight());
+//            Size largest = Collections.max(Arrays.asList(map.getOutputSizes(ImageFormat.YUV_420_888)), new
+//                    CompareSizesByArea());
+//            Log.d(TAG, "picture size: " + largest.getWidth() + "*" + largest.getHeight());
 //            mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.JPEG, 2);
 //            mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.YUV_420_888, 4);
-            mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.YUV_420_888, 2);
-            mImageReaderRaw = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.RAW_SENSOR, 2);
+//            mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.YUV_420_888, 2);
+//            mImageReaderRaw = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.RAW_SENSOR, 2);
+            mImageReader = ImageReader.newInstance(1920, 1080, ImageFormat.YUV_420_888, 2);
+            mImageReaderRaw = ImageReader.newInstance(1920,1080, ImageFormat.RAW_SENSOR, 2);
             // 预览大小，根据上面选择的拍照图片的长宽比，选择一个和控件长宽差不多的大小
 //            mPreviewSize = chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class), width, height, largest);
             mPreviewSize = map.getOutputSizes(SurfaceTexture.class)[0];
@@ -263,8 +265,8 @@ public class Camera2Proxy {
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(mDeviceOrientation));
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_OFF);
-            captureBuilder.set(CaptureRequest.SENSOR_SENSITIVITY, 2000);
-            captureBuilder.set(CaptureRequest.SENSOR_EXPOSURE_TIME, (long)100000);
+            captureBuilder.set(CaptureRequest.SENSOR_SENSITIVITY, 100);
+            captureBuilder.set(CaptureRequest.SENSOR_EXPOSURE_TIME, expTimeRange.getLower());
             // 预览如果有放大，拍照的时候也应该保存相同的缩放
             Rect zoomRect = mPreviewRequestBuilder.get(CaptureRequest.SCALER_CROP_REGION);
             if (zoomRect != null) {
